@@ -1,0 +1,39 @@
+{
+  "name": "layer2-tutorial",
+  "version": "1.0.0",
+  "description": "Layer 2 blockchain tutorial with EVM and Polkadot examples",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node frontier/transfer.js",
+    "transfer": "node frontier/transfer.js",
+    "balance": "node frontier/balance.js",
+    "deploy": "node frontier/deployContract.js",
+    "mint": "node frontier/mintToken.js"
+  },
+  "keywords": [
+    "blockchain",
+    "layer2",
+    "ethereum",
+    "polkadot",
+    "web3",
+    "evm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^6.0.0",
+    "web3": "^4.0.0",
+    "@polkadot/api": "^10.0.0",
+    "@polkadot/keyring": "^12.0.0",
+    "@polkadot/util": "^12.0.0",
+    "@polkadot/util-crypto": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
