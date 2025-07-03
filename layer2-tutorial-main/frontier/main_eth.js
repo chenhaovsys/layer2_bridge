@@ -95,15 +95,12 @@ class ETH{
         await this.mongo.insertTransaction(res1);
         minted[0] = true;
       }
-      const res = await transferERC20Token(this.nodeURL,this.privKey_BRIDGE,this.acntaddr_eth,this.TKNaddr,amount);
+      const res =  await transferERC20Token(this.nodeURL, this.privKey_BRIDGE,this.acntaddr_eth, this.TKNaddr, amount);
       res.timestamp = this.getFormattedDateTime()
       await this.mongo.insertTransaction(res);
     }catch(error){
       console.log(error);
       throw (2);
-    }
-    finally {
-      return minted;
     }
   }
 
