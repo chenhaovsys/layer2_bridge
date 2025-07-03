@@ -1,6 +1,7 @@
 1. run api.js
 2. in the shellscript, navigate to this folder
 3. run the follinwing line into your shellscript
+   
 curl -X POST http://localhost:3000/bridge \
   -H "Content-Type: application/json" \
   -d '{
@@ -15,5 +16,5 @@ curl -X POST http://localhost:3000/bridge \
     "mode": "ethTOvsys"
 }'
 
-4. put "ethTOvsys" in the mode section to send tokens from layer 2 to vsys
-5. put "vsysTOeth" in the mode section to send tokens from vsys to layer 2
+5. put "ethTOvsys" in the mode section to send tokens from layer 2 to vsys
+6. put "vsysTOeth" in the mode section to send tokens from vsys to layer 2
