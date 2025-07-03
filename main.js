@@ -1,12 +1,12 @@
 import { BridgeClass } from "./main_bridge.js";
 import * as env from "./env.js";
 
-async function main(dbURL,acntseed_vsys,acntaddr_vsys,acntaddr_eth,acntprivkey_vsys,vsystkn,ethtkn) {
-    var bridge = await new BridgeClass(dbURL,acntseed_vsys,acntaddr_vsys,acntaddr_eth,acntprivkey_vsys,vsystkn,ethtkn).init();
+async function main(dbURL,acntseed_vsys,acntaddr_vsys,acntaddr_eth,acntprivkey_vsys,vsysnet,ethnet) {
+    var bridge = await new BridgeClass(dbURL,acntseed_vsys,acntaddr_vsys,acntaddr_eth,acntprivkey_vsys,vsysnet,ethnet).init();
     console.log("---------------------------Starting Bridge Transfer---------------------------");
 
     try{
-        await bridge.ethTOvsys(1000);
+        await bridge.ethTOvsys(5000);
     }catch(error){
         console.error("Error:", error);
         return;

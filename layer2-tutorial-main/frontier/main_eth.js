@@ -8,6 +8,7 @@ import { mintTokens } from './mintToken.js';
 import { deploySmartContract,constructorArgs } from './deployContract.js';
 import ERC20Bytecode from "./contractByteCode/ERC20Bytecode.js";
 import {MongoClass} from '../../mongodb.js';
+import { destroyToken } from './destroytoken.js';
 
 class ETH{
   ethtkn;
@@ -83,32 +84,34 @@ class ETH{
 
   async bridgeTOacnt_eth(amount){
     this.printHeading("Sending Bridge Tokens from Bridge to ETH Account");
+    var minted = [false,0];
     try{
-      const new_TKNaddr = await this.tokenExists(this.nodeURL,this.TKNaddr);
-
-      const bal = await getTokenBalance(this.nodeURL,this.bridgeaddr,new_TKNaddr);
+      const bal = await getTokenBalance(this.nodeURL,this.bridgeaddr,this.TKNaddr);
+      minted[1] = (amount-bal);
       if (bal < amount){
         this.printHeading('Insufficient Token In Bridge, Minting Tokens');
-        const res1 = await mintTokens(this.nodeURL,this.privKey_BRIDGE,new_TKNaddr,this.bridgeaddr,String(amount - bal));      
+        const res1 = await mintTokens(this.nodeURL,this.privKey_BRIDGE,this.TKNaddr,this.bridgeaddr,String(amount - bal));      
         res1.timestamp = this.getFormattedDateTime();
         await this.mongo.insertTransaction(res1);
+        minted[0] = true;
       }
-      const res = await transferERC20Token(this.nodeURL,this.privKey_BRIDGE,this.acntaddr_eth,new_TKNaddr,amount);
+      const res = await transferERC20Token(this.nodeURL,this.privKey_BRIDGE,this.acntaddr_eth,this.TKNaddr,amount);
       res.timestamp = this.getFormattedDateTime()
       await this.mongo.insertTransaction(res);
     }catch(error){
       console.log(error);
       throw (2);
     }
+    finally {
+      return minted;
+    }
   }
 
   async acntTObridge_eth(amount){
     this.printHeading("Sending Bridge Tokens from ETH Account to Bridge")
       try{
-        const new_TKNaddr = await this.tokenExists(this.nodeURL,this.TKNaddr);
-
         const res = await transferERC20Token(this.nodeURL,this.acntprivkey_eth,this.bridgeaddr,
-          new_TKNaddr,amount);
+          this.TKNaddr,amount);
         res.timestamp = this.getFormattedDateTime();
           await this.mongo.insertTransaction(res);
         return res["Address"];
@@ -116,6 +119,19 @@ class ETH{
         console.log(error);
         throw (1);
       }
+  }
+
+  async destroyToken(amount) {
+    this.printHeading("Destroying Minted Tokens");
+    try {
+      const res = await destroyToken(this.nodeURL,this.bridgeaddr,amount,this.TKNaddr);
+      res.timestamp = this.getFormattedDateTime();
+      await this.mongo.insertTransaction(res);
+      return res;
+    } catch (error) {
+      console.log(error);
+      throw (error);
+    }
   }
 }
 

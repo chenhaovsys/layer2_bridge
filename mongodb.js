@@ -1,6 +1,7 @@
 "use strict";
 
 import * as mg from "mongodb";
+import { net } from "web3";
 
 class MongoClass{
 
@@ -178,12 +179,12 @@ class MongoClass{
             const token = await collection1.findOne({ name: name });
 
             if (!token) {
-                throw new Error("Network not found");
+                throw new Error("Token not found");
             }
 
             return token;
         } catch (err) {
-            console.error("Error fetching network:", err);
+            console.error("Error fetching Token:", err);
         } finally {
             await client.close();
         }
@@ -225,7 +226,7 @@ class MongoClass{
         }
     }
 
-    async updateTokenAddress(name,chainName,contractAddres = "",tokenAddress = "") {
+    async updateTokenAddress(name,contractAddress,tokenAddress) {
         const client = new mg.MongoClient(this.url);
         try {
             await client.connect();
@@ -234,34 +235,9 @@ class MongoClass{
 
             const result = await collection.updateOne(
             { name: name },
-            { chainName : chainName },
-            { $set: { ctrt_addr: contractAddress } }
+            { $set: { tkn_addr : tokenAddress , ctrt_addr: contractAddress } }
             );
 
-            console.log("Matched:", result.matchedCount, "Modified:", result.modifiedCount);
-        } catch (error) {
-            console.error("Update failed:", error);
-        } finally {
-            await client.close();
-        }
-    }
-
-    async updateContractToken_ETH(net,contractAddress) {
-        const client = new mg.MongoClient(this.url);
-        try {
-            await client.connect();
-            const db = client.db("transac_details");
-            const collection = db.collection("networks");
-
-            const filter = { [net]: { $exists: true } }; // replace with actual ID
-            const update = {
-                $set: {
-                    [`${net}.contract2`]: contractAddress,
-                    [`${net}.token2`]: contractAddress
-                }
-            };
-
-            const result = await collection.updateOne(filter, update);
             console.log("Matched:", result.matchedCount, "Modified:", result.modifiedCount);
         } catch (error) {
             console.error("Update failed:", error);
@@ -287,35 +263,6 @@ class MongoClass{
         }
     }
 
-    async insertData() {
-        const client = new mg.MongoClient(this.url);
-        
-        try {
-            await client.connect();
-            const db = client.db("transac_details");
-            const collection = db.collection("tokens");
-
-            const networkId = new mg.ObjectId("686240ebaba2127d1acc175c");
-
-            const result = await collection.insertOne({
-                name: "BRG",
-                network_id: networkId,
-                tkn_addr: "0xFc20B919e24580663E8c127eAdD37E7c0c6F056B",
-                ctrt_addr: "0xFc20B919e24580663E8c127eAdD37E7c0c6F056B",
-                desc: "Bridge Tokens in Holesky Testnet",
-                chainName:"HOLESKY",
-                issuer: "0x10cdeBbA4ef555bfabCDb3336CdcF78A0C32a549",
-                max: 10000000000,
-                registerTime:"2025-06-16 16:01:36"
-            });
-            console.log('Inserted:', result.insertedId);
-        } catch (err) {
-            console.error('Insert failed:', err);
-        } finally {
-            await client.close();
-        }
-    }
-
     async checkTokenPair(tkn1,tkn2){
         const client = new mg.MongoClient(this.url);
         try {
@@ -328,8 +275,12 @@ class MongoClass{
             const token2 = await tokens.findOne({ name:tkn2 });
 
 
-            if (!token1 || !token2) {
-                console.log("Token pair not found");
+            if (!token1) {
+                console.log("Error : VSYS Token not found");
+                return false;
+            }
+            if (!token2) {
+                console.log("Error : ETH Token not found");
                 return false;
             }
 
@@ -340,13 +291,25 @@ class MongoClass{
             const network1 = await networks.findOne({ _id: networkObjectId1 });
             const network2 = await networks.findOne({ _id: networkObjectId2 });
 
-            if (!network1 || !network2) {
-                console.log("Network pair not found");  
+            if (!network1) {
+                console.log("Error : Network for VSYS Token not found");  
+                return false;
+            }
+            if (!network2) {
+                console.log("Error : Network for ETH Token not found");  
+                return false;
+            }
+            if (network1.chain != "VSYS"){
+                console.log("Error : 1st Network is not VSYS Chain");
+                return false;
+            }
+            if (network2.chain != "ETH") {
+                console.log("Error : 2nd Network is not ETH Chain");
                 return false;
             }
 
             if (network1.type != network2.type) {
-                console.log("Network types do not match");
+                console.log("Error : Network types do not match");
                 return false;
             }
 

@@ -46,7 +46,7 @@ class BridgeClass{
             console.log(
                 "Network Pair Check Failed. Please ensure that the VSYS and ETH network environment are the same"
             )
-            throw new Error("Network Pair Check Failed");
+            throw Error("Network Pair Check Failed");
         }
 
         this.eth = await new ETH(this.ethtkn,this.acntaddr_eth,this.acntprivkey_eth,this.dbURL).init();
@@ -55,7 +55,7 @@ class BridgeClass{
     }
 
     async ethTOvsys(amount){
-        this.printHeading(`Transferring Tokens From ETH to VSYS In ${this.net} Network`);
+        this.printHeading(`Transferring Tokens From ETH to VSYS`);
         try{
             const res = await this.eth.acntTObridge_eth(amount);
             await this.vsys.bridgeTOacnt_vsys(amount,"ETH Transfer Address : "+res);
@@ -65,19 +65,24 @@ class BridgeClass{
             if (error == 2){
                 this.printHeading('Refunding Tokens Sent');
                 await this.eth.bridgeTOacnt_eth(amount);
+                await this.eth
             }
         }
     }
     
     async vsysTOeth(amount){
-        this.printHeading(`Transferring Tokens From VSYS to ETH in ${this.net} Network`);
+        this.printHeading(`Transferring Tokens From VSYS to ETH`);
         try{
             await this.vsys.acntTObridge_vsys(amount,"Bridge Tokens From VSYS to ETH");
-            await this.eth.bridgeTOacnt_eth(amount);
+            var minted = await this.eth.bridgeTOacnt_eth(amount);
             this.printHeading('Operation Successful');
         }catch(error){
             this.printHeading('Operation Failed')
             if (error == 2){
+                if (minted[0] == true){
+                    this.printHeading('Destroying Minted Tokens');
+                    await this.eth.destroyToken(minted[1]);
+                }
                 this.printHeading('Refunding Tokens Sent');
                 await this.vsys.bridgeTOacnt_vsys(amount);
             }
