@@ -4,6 +4,7 @@ import Web3 from 'web3';
 import { ethers } from 'ethers';
 import { ETH } from './layer2-tutorial-main/frontier/main_eth.js';
 import { VSYS } from './js-vsys/main_vsys.js';
+import { MongoClass } from './mongodb.js';
 
 class BridgeClass{
 
@@ -12,17 +13,21 @@ class BridgeClass{
     acntseed_vsys;
     acntaddr_eth;
     acntprivkey_eth;
-    net;
+    vsystkn;
+    ethtkn;
     eth;
     vsys;
+    mongo;
 
-    constructor(dbURL,seed_vsys,addr_vsys,addr_eth,acntprivkey_eth,net) {
+    constructor(dbURL,seed_vsys,addr_vsys,addr_eth,acntprivkey_eth,vsystkn,ethtkn) {
         this.dbURL = dbURL;
         this.acntseed_vsys = seed_vsys;
         this.acntaddr_vsys = addr_vsys;
         this.acntaddr_eth = addr_eth;
         this.acntprivkey_eth = acntprivkey_eth;
-        this.net = net;
+        this.ethtkn = ethtkn;
+        this.vsystkn = vsystkn;
+        this.mongo = new MongoClass(dbURL);
     }
 
     printHeading(msg) {
@@ -36,8 +41,16 @@ class BridgeClass{
     }
 
     async init(){
-        this.eth = await new ETH(this.net,this.acntaddr_eth,this.acntprivkey_eth,this.dbURL).init();
-        this.vsys = await new VSYS(this.net,this.acntaddr_vsys,this.acntseed_vsys,this.dbURL).init();
+        const res = await this.mongo.checkTokenPair(this.vsystkn,this.ethtkn);        
+        if (!res) {
+            console.log(
+                "Network Pair Check Failed. Please ensure that the VSYS and ETH network environment are the same"
+            )
+            throw new Error("Network Pair Check Failed");
+        }
+
+        this.eth = await new ETH(this.ethtkn,this.acntaddr_eth,this.acntprivkey_eth,this.dbURL).init();
+        this.vsys = await new VSYS(this.vsystkn,this.acntaddr_vsys,this.acntseed_vsys,this.dbURL).init();
         return this;
     }
 

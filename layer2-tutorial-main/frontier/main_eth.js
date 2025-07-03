@@ -10,7 +10,7 @@ import ERC20Bytecode from "./contractByteCode/ERC20Bytecode.js";
 import {MongoClass} from '../../mongodb.js';
 
 class ETH{
-  net;
+  ethtkn;
   nodeURL;
   TKNaddr;
   privKey_BRIDGE;
@@ -19,23 +19,24 @@ class ETH{
   acntprivkey_eth;
   mongo;
 
-  constructor(net,acntaddr_eth,accntprivkey_eth,dbURL) {
-    this.net = net;
+  constructor(ethtkn,acntaddr_eth,accntprivkey_eth,dbURL) {
+    this.ethtkn = ethtkn;
     this.acntaddr_eth = acntaddr_eth;
     this.acntprivkey_eth = accntprivkey_eth;
     this.mongo = new MongoClass(dbURL);
   }
 
   async init(){
-    await this.setUpETH(this.net);
+    await this.setUpETH(this.ethtkn);
     return this;
   }
 
-  async setUpETH(net) {
+  async setUpETH(ethtkn) {
   try{
-      const netData = await this.mongo.getPairNetworks(net);
-      this.nodeURL = netData[1].nodeURL;
-      this.TKNaddr = netData[1].token;
+      const tkn = await this.mongo.getToken(ethtkn);
+      const netData = await this.mongo.getNetworkDetails_ID(tkn.network_id);
+      this.nodeURL = netData.nodeURL;
+      this.TKNaddr = tkn.tkn_addr;
       this.privKey_BRIDGE = await this.mongo.getBridgeKey_ETH();
       this.bridgeaddr = await this.mongo.getBridgeADDR_ETH();
     }catch(error){
@@ -105,14 +106,6 @@ class ETH{
     this.printHeading("Sending Bridge Tokens from ETH Account to Bridge")
       try{
         const new_TKNaddr = await this.tokenExists(this.nodeURL,this.TKNaddr);
-
-        const bal = await getTokenBalance(this.nodeURL,this.acntaddr_eth,new_TKNaddr);
-        if (bal < amount){
-          this.printHeading('Insufficient Token In Bridge, Minting Tokens');
-          const res1 = await mintTokens(this.nodeURL,this.privKey_BRIDGE,new_TKNaddr,this.acntaddr_eth,String(amount - bal));      
-          res1.timestamp = this.getFormattedDateTime();
-          await this.mongo.insertTransaction(res1);
-        }
 
         const res = await transferERC20Token(this.nodeURL,this.acntprivkey_eth,this.bridgeaddr,
           new_TKNaddr,amount);

@@ -1,12 +1,12 @@
 import { BridgeClass } from "./main_bridge.js";
 import * as env from "./env.js";
 
-async function main(dbURL,acntseed_vsys,acntaddr_vsys,acntaddr_eth,acntprivkey_vsys,net) {
-    var bridge = await new BridgeClass(dbURL,acntseed_vsys,acntaddr_vsys,acntaddr_eth,acntprivkey_vsys,net).init();
+async function main(dbURL,acntseed_vsys,acntaddr_vsys,acntaddr_eth,acntprivkey_vsys,vsystkn,ethtkn) {
+    var bridge = await new BridgeClass(dbURL,acntseed_vsys,acntaddr_vsys,acntaddr_eth,acntprivkey_vsys,vsystkn,ethtkn).init();
     console.log("---------------------------Starting Bridge Transfer---------------------------");
 
     try{
-        await bridge.ethTOvsys(3000);
+        await bridge.ethTOvsys(1000);
     }catch(error){
         console.error("Error:", error);
         return;
@@ -19,6 +19,9 @@ await main(
     env.ACNT1ADDR_VSYS,
     env.ACNT1ADDR_ETH,
     env.PRIVATEKEY_ACC1_ETH,
-    "testnet_holesky"
+    "BRG_VSYS",
+    "BRG_LAYER2"
 );
+
+
 
