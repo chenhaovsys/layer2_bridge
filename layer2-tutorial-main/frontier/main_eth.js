@@ -100,7 +100,7 @@ class ETH{
       await this.mongo.insertTransaction(res);
     }catch(error){
       console.log(error);
-      throw (2);
+      throw minted;
     }
   }
 

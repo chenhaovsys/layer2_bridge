@@ -62,10 +62,13 @@ class BridgeClass{
             this.printHeading('Operation Successful');
         }catch(error){
             this.printHeading('Operation Failed')
-            if (error == 2){
+            if (typeof error != "number"){
+                if (error[0] == true){
+                    this.printHeading('Destroying Minted Tokens');
+                    await this.vsys.destroyToken(error[1]);
+                }
                 this.printHeading('Refunding Tokens Sent');
                 await this.eth.bridgeTOacnt_eth(amount);
-                await this.eth
             }
         }
     }
@@ -74,14 +77,14 @@ class BridgeClass{
         this.printHeading(`Transferring Tokens From VSYS to ETH`);
         try{
             await this.vsys.acntTObridge_vsys(amount,"Bridge Tokens From VSYS to ETH");
-            var minted = await this.eth.bridgeTOacnt_eth(amount);
+            await this.eth.bridgeTOacnt_eth(amount);
             this.printHeading('Operation Successful');
         }catch(error){
             this.printHeading('Operation Failed')
-            if (error == 2){
-                if (minted[0] == true){
+            if (typeof error != "number"){
+                if (error[0] == true){
                     this.printHeading('Destroying Minted Tokens');
-                    await this.eth.destroyToken(minted[1]);
+                    await this.eth.destroyToken(error[1]);
                 }
                 this.printHeading('Refunding Tokens Sent');
                 await this.vsys.bridgeTOacnt_vsys(amount);
