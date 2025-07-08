@@ -178,6 +178,7 @@ class MongoClass{
 
             const token = await collection1.findOne({ name: name });
 
+            console.log(token);
             if (!token) {
                 throw new Error("Token not found");
             }
@@ -261,8 +262,8 @@ class MongoClass{
 
             const result = await collection.updateOne(
                 { _id: new mg.ObjectId(token_id) },
-                { $set: { wrapped: {"$oid":wrapped_id } }
-            );
+                { $set: { wrapped: {"$oid":wrapped_id } }}
+        );
 
             console.log("Matched:", result.matchedCount, "Modified:", result.modifiedCount);
         } catch (error) {
@@ -367,20 +368,5 @@ class MongoClass{
         }
     }
 }
-
-var mongo = new MongoClass("mongodb://localhost:27017");
-mongo.insertTokenData({
-    name: "BRIDGE_LAYER2",
-    network_id: "6867496852f174c21ca768dd",
-    tkn_addr: "0x40aC7981e59cfA9d6B25aAd5681A53058A480099",
-    ctrt_addr: "0x40aC7981e59cfA9d6B25aAd5681A53058A480099",
-    networkName: "LAYER2",
-    issuer: "0x491B873007B464C1f90CD5107505521abacE5ce7",
-    max: 10000000000,
-    registerTime: "2025-06-30 09:18:46",  
-    desc: "Layer 2 Bridge Token",
-    wrapped: "false"
-});
-
 
 export { MongoClass };

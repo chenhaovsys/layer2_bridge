@@ -34,7 +34,7 @@ class ETH{
 
   async setUpETH(ethtkn) {
   try{
-      const tkn = await this.mongo.getToken(ethtkn);
+      const tkn = await this.mongo.getToken_name(ethtkn);
       const netData = await this.mongo.getNetworkDetails_ID(tkn.network_id);
       this.nodeURL = netData.nodeURL;
       this.TKNaddr = tkn.tkn_addr;

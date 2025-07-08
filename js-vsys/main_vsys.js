@@ -3,7 +3,6 @@
 import * as jv from './src/index.js';
 import {MongoClass} from '../mongodb.js';
 import * as tkn from './token.js';
-import { min } from 'bn.js';
 
 class VSYS{
   vsystkn;
@@ -39,7 +38,7 @@ class VSYS{
 
   async setUpVSYS(vsystkn) {
     try{
-      const tkn = await this.mongo.getToken(vsystkn);
+      const tkn = await this.mongo.getToken_name(vsystkn);
       const netData = await this.mongo.getNetworkDetails_ID(tkn.network_id);
       this.nodeURL = netData.nodeURL;
       this.TKNaddr = tkn.tkn_addr;  
@@ -124,13 +123,5 @@ class VSYS{
     }
   }
 }
-
-var vsys = await new VSYS(
-  "BRG_VSYS",
-  "AU4b3UZB7a1t9Rz5iaBQvFWrsETVgrG8moX",
-  "glove safe safe collect switch winter jacket skill slender banner gift industry time skin suit",
-  "mongodb://localhost:27017"
-).init();
-await vsys.bridgeTOacnt_vsys(5000, "Refund");
 
 export {VSYS};
