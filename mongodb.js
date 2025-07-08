@@ -169,7 +169,7 @@ class MongoClass{
         }
     }
 
-    async getToken(name) {
+    async getToken_name(name) {
         const client = new mg.MongoClient(this.url);
         try {
             await client.connect();
@@ -177,6 +177,27 @@ class MongoClass{
             const collection1 = database.collection("tokens");
 
             const token = await collection1.findOne({ name: name });
+
+            if (!token) {
+                throw new Error("Token not found");
+            }
+
+            return token;
+        } catch (err) {
+            console.error("Error fetching Token:", err);
+        } finally {
+            await client.close();
+        }
+    }
+
+    async getToken_addr(tkn_addr) {
+        const client = new mg.MongoClient(this.url);
+        try {
+            await client.connect();
+            const database = client.db("transac_details");
+            const collection1 = database.collection("tokens");
+
+            const token = await collection1.findOne({ tkn_addr: tkn_addr });
 
             if (!token) {
                 throw new Error("Token not found");
@@ -199,8 +220,10 @@ class MongoClass{
         issuer,
         max,
         registerTime,
-        desc = ""
+        desc = "",
+        wrapped = "false"
         }) {
+            const client = new mg.MongoClient(this.url);
         try {
             await client.connect();
             const db = client.db("transac_details"); // Change to your DB name
@@ -208,19 +231,42 @@ class MongoClass{
 
             const result = await collection.insertOne({
             name : name,
-            network_id: new ObjectId(network_id),
+            network_id: new mg.ObjectId(network_id),
             tkn_addr : tkn_addr,
             ctrt_addr : ctrt_addr,
             desc : desc,
             issuer  : issuer,
             max: max,
             registerTime: new Date(registerTime),
-            networkName : networkName
+            networkName : networkName,
+            wrapped: wrapped
             });
-
-            console.log("Inserted document ID:", result.insertedId);
+            
+            const id = result.insertedId; // Get the inserted ID
+            console.log("Inserted document ID:", id);
+            return id.toString();
         } catch (err) {
             console.error("Error inserting token data:", err);
+        } finally {
+            await client.close();
+        }
+    }
+
+    async updateWrapped(token_id,wrapped_id){
+        const client = new mg.MongoClient(this.url);
+        try {
+            await client.connect();
+            const db = client.db("transac_details");
+            const collection = db.collection("tokens");
+
+            const result = await collection.updateOne(
+                { _id: new mg.ObjectId(token_id) },
+                { $set: { wrapped: {"$oid":wrapped_id } }
+            );
+
+            console.log("Matched:", result.matchedCount, "Modified:", result.modifiedCount);
+        } catch (error) {
+            console.error("Update failed:", error);
         } finally {
             await client.close();
         }
@@ -321,5 +367,20 @@ class MongoClass{
         }
     }
 }
+
+var mongo = new MongoClass("mongodb://localhost:27017");
+mongo.insertTokenData({
+    name: "BRIDGE_LAYER2",
+    network_id: "6867496852f174c21ca768dd",
+    tkn_addr: "0x40aC7981e59cfA9d6B25aAd5681A53058A480099",
+    ctrt_addr: "0x40aC7981e59cfA9d6B25aAd5681A53058A480099",
+    networkName: "LAYER2",
+    issuer: "0x491B873007B464C1f90CD5107505521abacE5ce7",
+    max: 10000000000,
+    registerTime: "2025-06-30 09:18:46",  
+    desc: "Layer 2 Bridge Token",
+    wrapped: "false"
+});
+
 
 export { MongoClass };
