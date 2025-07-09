@@ -121,7 +121,7 @@ class ETH{
   async destroyToken(amount) {
     this.printHeading("Destroying Minted Tokens");
     try {
-      const res = await destroyToken(this.nodeURL,this.bridgeaddr,amount,this.TKNaddr);
+      const res = await destroyToken(this.nodeURL,this.bridgeaddr,this.privKey_BRIDGE,amount,this.TKNaddr);
       res.timestamp = this.getFormattedDateTime();
       await this.mongo.insertTransaction(res);
       return res;
