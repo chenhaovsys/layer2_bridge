@@ -11,6 +11,7 @@ import {MongoClass} from '../../mongodb.js';
 import { destroyToken } from './destroytoken.js';
 
 class ETH{
+  ethnet;
   ethtkn;
   nodeURL;
   TKNaddr;
@@ -20,7 +21,8 @@ class ETH{
   acntprivkey_eth;
   mongo;
 
-  constructor(ethtkn,acntaddr_eth,accntprivkey_eth,dbURL) {
+  constructor(acntaddr_eth,accntprivkey_eth,dbURL,ethnet,ethtkn) {
+    this.ethnet = ethnet;
     this.ethtkn = ethtkn;
     this.acntaddr_eth = acntaddr_eth;
     this.acntprivkey_eth = accntprivkey_eth;
@@ -28,14 +30,18 @@ class ETH{
   }
 
   async init(){
-    await this.setUpETH(this.ethtkn);
+    await this.setUpETH(this.ethtkn,this.ethnet);
     return this;
   }
 
-  async setUpETH(ethtkn) {
+  async setUpETH(ethtkn,ethnet) {
   try{
+      if ( typeof ethtkn != 'string' ) {
+        await this.wrapToken();
+      }
+
       const tkn = await this.mongo.getToken_name(ethtkn);
-      const netData = await this.mongo.getNetworkDetails_ID(tkn.network_id);
+      const netData = await this.mongo.getNetworkDetails_Name(ethnet);
       this.nodeURL = netData.nodeURL;
       this.TKNaddr = tkn.tkn_addr;
       this.privKey_BRIDGE = await this.mongo.getBridgeKey_ETH();
@@ -45,7 +51,6 @@ class ETH{
       throw ("Failed to retrieve data from database");
     }
   }
-  
   
   printHeading(msg) {
     function times(char, num) {
@@ -63,20 +68,34 @@ class ETH{
     return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   }
 
-  async tokenExists(){
-    this.printHeading("Checking Existence of Token");
+  async wrapToken(){
     try{
-      const res = await checkToken(this.nodeURL,this.TKNaddr);
-      if (!res){
-        this.printHeading("Token Doesn't Exist, Creating Token");
-        const contractAddress = await deploySmartContract(this.nodeURL,this.privKey_BRIDGE,ERC20ABI.abi,ERC20Bytecode.code,constructorArgs);
-        await this.mongo.updateContractToken_ETH(this.net,contractAddress);
-        this.TKNaddr = contractAddress;
-        this.printHeading("Token Created Successfully");
-        return contractAddress;
-      }
-      this.printHeading("Token Exists");
-      return this.TKNaddr;
+      this.printHeading("Wrapped Token Doesn't Exist, Creating Wrapped Token");
+
+      const ogname = this.ethtkn[1];
+      const tkname = ogname+"_wrapped";
+      var decimals = 2; 
+      var maxSupply = BigInt(100000000 * (Math.pow(10, decimals)));
+      const constructorArgs = [tkname, "WRP", decimals, maxSupply, "1", "USD"];
+      
+      const contractAddress = await deploySmartContract(this.nodeURL,this.privKey_BRIDGE,ERC20ABI.abi,ERC20Bytecode.code,constructorArgs);
+      const timestamp = this.getFormattedDateTime()
+      const networkName = this.ethnet;
+      const data = await this.mongo.getNetworkDetails_Name(networkName);
+      const networkID = data._id.toString();
+      const issuer = this.bridgeaddr;
+      const desc = "Wrapped Token for "+ogname;
+      const data1 = await this.mongo.getToken_name(ogname);
+      const wrapped = data1._id.toString();
+
+      await this.mongo.insertTokenData({tkname,networkID,contractAddress,contractAddress,networkName,
+        issuer,maxSupply,timestamp,desc,wrapped
+      });
+
+      this.ethtkn = tkname;
+      this.TKNaddr = contractAddress;
+      this.printHeading("Wrapped Token Created Successfully");
+      return contractAddress;
     }catch(error){
       throw (error);
     }

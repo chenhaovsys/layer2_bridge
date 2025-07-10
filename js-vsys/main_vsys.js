@@ -6,6 +6,7 @@ import * as tkn from './token.js';
 
 class VSYS{
   vsystkn;
+  vsysnet
   nodeURL
   TKNaddr;
   CTRTaddr;
@@ -18,7 +19,8 @@ class VSYS{
   acntbridge;
   ch;
 
-  constructor(vsystkn,acntaddr_vsys,acntseed_vsys,dbURL) {
+  constructor(acntaddr_vsys,acntseed_vsys,dbURL,vsysnet,vsystkn) {
+    this.vsysnet = vsysnet;
     this.vsystkn = vsystkn;
     this.acntaddr_vsys = acntaddr_vsys;
     this.acntseed_vsys = acntseed_vsys;
@@ -26,7 +28,7 @@ class VSYS{
   }
 
   async init(){
-    await this.setUpVSYS(this.vsystkn);
+    await this.setUpVSYS(this.vsystkn,this.vsysnet);
     return this;
   } 
 
@@ -36,10 +38,10 @@ class VSYS{
     return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   }
 
-  async setUpVSYS(vsystkn) {
+  async setUpVSYS(vsystkn,vsysnet) {
     try{
       const tkn = await this.mongo.getToken_name(vsystkn);
-      const netData = await this.mongo.getNetworkDetails_ID(tkn.network_id);
+      const netData = await this.mongo.getNetworkDetails_Name(vsysnet);
       this.nodeURL = netData.nodeURL;
       this.TKNaddr = tkn.tkn_addr;  
       this.CTRTaddr = tkn.ctrt_addr;
@@ -75,7 +77,7 @@ class VSYS{
   }
 
   async bridgeTOacnt_vsys(amount,desc){    
-    this.printHeading("Sending Bridge Tokens from Bridge to VSYS Account")
+    this.printHeading(`Sending Token from Bridge to VSYS Account`)
     var minted = [false,0];
     try{
       const tokenBalance = await tkn.getTokenBalance(this.CTRTaddr,this.ch,this.acntbridge);
