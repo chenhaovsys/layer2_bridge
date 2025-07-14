@@ -8,11 +8,16 @@ export async function runBridgeAction(config) {
     acntaddr_vsys,
     acntaddr_eth,
     acntprivkey_eth,
-    vsysnet,
-    ethnet,
+    network1,
+    network2,
     tkn,
     amount
   } = config;
+
+  if (amount <= 0) {
+    console.error("Invalid amount:", amount);
+    throw new Error("Amount must be greater than zero");
+  }
 
   const bridge = await new BridgeClass(
     dbURL,
@@ -20,9 +25,9 @@ export async function runBridgeAction(config) {
     acntaddr_vsys,
     acntaddr_eth,
     acntprivkey_eth,
-    vsysnet,
-    ethnet,
-    tkn,
+    network1,
+    network2,
+    tkn
   ).init();
 
   console.log("--------------------------- Starting Bridge Action ---------------------------");
@@ -31,9 +36,9 @@ export async function runBridgeAction(config) {
   try {
     let result;
     if (bridge.getMode() === "ethTOvsys") {
-      result = await bridge.ethTOvsys(amount);
+      bridge.ethTOvsys(amount);
     } else if (bridge.getMode() === "vsysTOeth") {
-      result = await bridge.vsysTOeth(amount);
+      bridge.vsysTOeth(amount);
     } else {
       throw new Error("Invalid modes");
     }

@@ -69,7 +69,7 @@ class BridgeClass{
                 this.wrapped_tkn = ["wrapped_false",this.tkn];
             }
 
-            if ((this.mode == "vsysTOeth" && this.original ) || (this.mode == "ethTOvsys" && !this.original )){
+            if ((this.mode == "vsysTOeth" && res.original ) || (this.mode == "ethTOvsys" && !res.original )){
                 this.vsystkn = this.tkn;
                 this.ethtkn = this.wrapped_tkn;
             }else{

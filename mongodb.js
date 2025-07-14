@@ -211,6 +211,27 @@ class MongoClass{
         }
     }
 
+    async getToken_id(id) {
+        const client = new mg.MongoClient(this.url);
+        try {
+            await client.connect();
+            const database = client.db("transac_details");
+            const collection1 = database.collection("tokens");
+
+            const token = await collection1.findOne({_id: new mg.ObjectId(id)});
+
+            if (!token) {
+                throw new Error("Token not found");
+            }
+
+            return token;
+        } catch (err) {
+            console.error("Error fetching Token:", err);
+        } finally {
+            await client.close();
+        }
+    }
+
     async insertTokenData({
         name,
         network_id,
@@ -221,7 +242,7 @@ class MongoClass{
         max,
         registerTime,
         desc = "",
-        wrapped = "false"
+        wrapped
         }) {
             const client = new mg.MongoClient(this.url);
         try {
@@ -239,7 +260,7 @@ class MongoClass{
             max: max,
             registerTime: new Date(registerTime),
             networkName : networkName,
-            wrapped: new mg.ObjectId(network_id)
+            wrapped: new mg.ObjectId(wrapped)
             });
             
             const id = result.insertedId; // Get the inserted ID
@@ -261,7 +282,7 @@ class MongoClass{
 
             const result = await collection.updateOne(
                 { _id: new mg.ObjectId(token_id) },
-                { $set: { wrapped: {"$oid":wrapped_id } }}
+                { $set: { "wrapped": new mg.ObjectId(wrapped_id) } }
         );
 
             console.log("Matched:", result.matchedCount, "Modified:", result.modifiedCount);
@@ -375,18 +396,16 @@ class MongoClass{
             var mode = "vsysTOeth";
             await client.connect();
             const db = client.db("transac_details");
-            const tokens = db.collection("tokens");
-            const networks = db.collection("networks");
 
-            const token = await tokens.findOne({ name:tkn });
+            const token = await this.getToken_name(tkn);
 
             if (!token) {
                 throw Error("Token not found");
             }
 
-            const network_token = await networks.findOne({ _id: token.network_id });
-            const network_prim = await networks.findOne({ name: network1 });
-            const network_second = await networks.findOne({ name: network2 });
+            const network_token = await this.getNetworkDetails_ID(token.network_id.toString());
+            const network_prim = await this.getNetworkDetails_Name(network1);
+            const network_second = await this.getNetworkDetails_Name(network2);
             
             if (!network_prim) {
                 throw Error("1st Network not found");
@@ -423,9 +442,5 @@ class MongoClass{
         }
     }
 }
-
-const wrappedName = "fhsdihfkgdsuiofhds_wrapped";
-const tokenName = wrappedName.replace(/_wrapped$/, "");
-console.log(tokenName);
 
 export { MongoClass };

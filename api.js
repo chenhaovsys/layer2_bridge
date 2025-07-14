@@ -8,13 +8,6 @@ app.use(bodyParser.json());
 app.post('/bridge', async (req, res) => {
   const { mode } = req.body;
 
-  if (!mode || !["ethTOvsys", "vsysTOeth"].includes(mode)) {
-    return res.status(400).json({
-      success: false,
-      error: "Missing or invalid 'mode'. Must be 'ethTOvsys' or 'vsysTOeth'."
-    });
-  }
-
   try {
     const result = await runBridgeAction(req.body);
     res.json(result);
