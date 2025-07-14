@@ -5,7 +5,7 @@ PREREQUISITES
 
 INSTALLING THE BRIDGE/DEPENDENCIES
 
-1. in your folder, run git clone https://github.com/chenhaovsys/layer2_bridge.git to clone to repository 
+1. in your folder, run git clone https://github.com/chenhaovsys/layer2_bridge.git to clone the repository 
 2. navigate to the bridge folder, and run npm run install-all to install all dependencies 
 
 HOW TO USE
