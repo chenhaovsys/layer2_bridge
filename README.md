@@ -1,20 +1,41 @@
-1. run api.js
-2. in the shellscript, navigate to this folder
-3. run the follinwing line into your shellscript
-   
-curl -X POST http://localhost:3000/bridge \
-  -H "Content-Type: application/json" \
-  -d '{
-    "dbURL": "mongodb://localhost:27017",
-    "acntseed_vsys": "YOUR_VSYS_SEED",
-    "acntaddr_vsys": "YOUR_VSYS_ADDRESS",
-    "acntaddr_eth": "YOUR_ETH_ADDRESS",
-    "acntprivkey_vsys": "YOUR_ETH_PRIVATE_KEY",
-    "vsysnet": "BRG_VSYS",
-    "ethnet": "BRG_LAYER2",
-    "amount": 5000,
-    "mode": "ethTOvsys"
-}'
+PREREQUISITES 
 
-5. put "ethTOvsys" in the mode section to send tokens from layer 2 to vsys
-6. put "vsysTOeth" in the mode section to send tokens from vsys to layer 2
+- node js
+- mongodb
+
+INSTALLING THE BRIDGE/DEPENDENCIES
+
+1. in your folder, run git clone https://github.com/chenhaovsys/layer2_bridge.git to clone to repository 
+2. navigate to the bridge folder, and run npm run install-all to install all dependencies 
+
+HOW TO USE
+
+1. navigate to the bridge folder, create a json file called bridge_request (bridge_request.json)
+2. in the file, copy and paste the following
+
+{
+  "dbURL": YOUR_DB_URL,
+  "acntseed_vsys": YOUR_VSYS_ACCOUNT_SEED,
+  "acntaddr_vsys": YOUR_VSYS_ACCOUNT_ADDRESS,
+  "acntaddr_eth": YOUR_ETH_ACCOUNT_ADDRESS,
+  "acntprivkey_eth": YOUR_VSYS_ACCOUNT_SEED,
+  "network1": NATIVE_NETWORK ,
+  "network2": FOREIGN_NETWORK ,
+  "tkn": TOKEN_NAME ,
+  "amount": amount_of_tokens_to_transfer
+}
+
+3. 
+dbURL - mongodb connection string
+network1 - if tokens are bridged from VSYS to LAYER2, VSYS will be network1
+network2 - if tokens are bridged from VSYS to LAYER2, LAYER2 will be network2
+tkn - name of the original token, must be deployed before the use of the bridge, and inserted into mongoDB 
+
+4. make sure bridge_request.json is valid before running the bridge 
+
+RUNNING THE BRIDGE
+
+1. run api.js, it should say "Bridge API running at http://localhost:3000" 
+2. open shellscript, navigate to the folder of the bridge
+3. run the follinwing line into your shellscript
+curl -X POST http://localhost:3000/bridge -H "Content-Type: application/json" -d @bridge_request.json
