@@ -32,7 +32,8 @@
   "scripts": {
     "start": "node api.js",
     "dev": "nodemon api.js",
-    "install-all": "npm install && cd js-vsys && npm install && cd ../layer2-tutorial-main && npm install && cd ..",
+    "install-all": "npm install && (cd js-vsys && npm install || echo \"js-vsys not found\") && (cd layer2-tutorial-main && npm install || echo \"layer2-tutorial-main not found\")",
+    "setup": "node setup.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
