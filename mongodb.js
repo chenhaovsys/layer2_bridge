@@ -178,7 +178,6 @@ class MongoClass{
 
             const token = await collection1.findOne({ name: name });
 
-            console.log(token);
             if (!token) {
                 throw new Error("Token not found");
             }
@@ -212,6 +211,27 @@ class MongoClass{
         }
     }
 
+    async getToken_id(id) {
+        const client = new mg.MongoClient(this.url);
+        try {
+            await client.connect();
+            const database = client.db("transac_details");
+            const collection1 = database.collection("tokens");
+
+            const token = await collection1.findOne({_id: new mg.ObjectId(id)});
+
+            if (!token) {
+                throw new Error("Token not found");
+            }
+
+            return token;
+        } catch (err) {
+            console.error("Error fetching Token:", err);
+        } finally {
+            await client.close();
+        }
+    }
+
     async insertTokenData({
         name,
         network_id,
@@ -222,7 +242,7 @@ class MongoClass{
         max,
         registerTime,
         desc = "",
-        wrapped = "false"
+        wrapped
         }) {
             const client = new mg.MongoClient(this.url);
         try {
@@ -240,7 +260,7 @@ class MongoClass{
             max: max,
             registerTime: new Date(registerTime),
             networkName : networkName,
-            wrapped: wrapped
+            wrapped: new mg.ObjectId(wrapped)
             });
             
             const id = result.insertedId; // Get the inserted ID
@@ -262,7 +282,7 @@ class MongoClass{
 
             const result = await collection.updateOne(
                 { _id: new mg.ObjectId(token_id) },
-                { $set: { wrapped: {"$oid":wrapped_id } }}
+                { $set: { "wrapped": new mg.ObjectId(wrapped_id) } }
         );
 
             console.log("Matched:", result.matchedCount, "Modified:", result.modifiedCount);
@@ -323,11 +343,11 @@ class MongoClass{
 
 
             if (!token1) {
-                console.log("Error : VSYS Token not found");
+                console.log("VSYS Token not found");
                 return false;
             }
             if (!token2) {
-                console.log("Error : ETH Token not found");
+                console.log("ETH Token not found");
                 return false;
             }
 
@@ -339,30 +359,84 @@ class MongoClass{
             const network2 = await networks.findOne({ _id: networkObjectId2 });
 
             if (!network1) {
-                console.log("Error : Network for VSYS Token not found");  
+                console.log("Network for VSYS Token not found");  
                 return false;
             }
             if (!network2) {
-                console.log("Error : Network for ETH Token not found");  
+                console.log("Network for ETH Token not found");  
                 return false;
             }
             if (network1.chain != "VSYS"){
-                console.log("Error : 1st Network is not VSYS Chain");
+                console.log("1st Network is not VSYS Chain");
                 return false;
             }
             if (network2.chain != "ETH") {
-                console.log("Error : 2nd Network is not ETH Chain");
+                console.log("2nd Network is not ETH Chain");
                 return false;
             }
 
             if (network1.type != network2.type) {
-                console.log("Error : Network types do not match");
+                console.log("Network types do not match");
                 return false;
             }
 
             return true;
         } catch (err) {
-            console.error("Error:", err);
+            console.error(err);
+        } finally {
+            await client.close();
+        }
+    }
+
+    async checkToken_test(tkn,network1,network2){
+        const client = new mg.MongoClient(this.url);
+        try {
+            var original = true;
+            var wrapped = true;
+            var mode = "vsysTOeth";
+            await client.connect();
+            const db = client.db("transac_details");
+
+            const token = await this.getToken_name(tkn);
+
+            if (!token) {
+                throw Error("Token not found");
+            }
+
+            const network_token = await this.getNetworkDetails_ID(token.network_id.toString());
+            const network_prim = await this.getNetworkDetails_Name(network1);
+            const network_second = await this.getNetworkDetails_Name(network2);
+            
+            if (!network_prim) {
+                throw Error("1st Network not found");
+            }
+            if (!network_second) {
+                throw Error("2nd Network not found");
+            }
+            
+            if (network_prim.type != network_second.type) {
+                throw Error("Network types do not match");
+            }
+
+            if (network_prim.chain == network_second.chain) {
+                throw Error("Both networks chain are the same");
+            }
+
+            if (network_prim.chain == "ETH") {
+                mode = "ethTOvsys";
+            }
+
+            if (network_token._id.toString() != network_prim._id.toString()) {
+                original = false;
+            }
+
+            if (token.wrapped == "false") {
+                wrapped = false;
+            }
+
+            return {"wrapped":wrapped,"original":original,"mode":mode};
+        } catch (err) {
+            console.error(err);
         } finally {
             await client.close();
         }

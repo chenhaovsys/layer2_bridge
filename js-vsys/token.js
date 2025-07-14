@@ -1,4 +1,5 @@
 import * as jv from "./src/index.js";
+import BN from "bn.js";
 
 function printHeading(msg) {
   function times(char, num) {
@@ -10,20 +11,23 @@ function printHeading(msg) {
   console.log(times('=', 10), msg, times('=', 10));
 }
 
-async function registerToken(acnt,max,amount,tokDesc,ctrtDesc){
+async function registerToken(acnt,max,unit,tokDesc,ctrtDesc){
     printHeading("Creating Token");
     try{
+        const realunit = new BN(unit);
         const tokenContract = await jv.TokCtrtWithoutSplit.register(
             acnt,
             max,
-            amount,
+            realunit,
             tokDesc,
             ctrtDesc
         );
+        console.log(tokenContract);
         const contractID = tokenContract.ctrtId.data;
         return contractID;
     }catch(error){
         console.log(error);
+        throw (error);
     }
 }
 
@@ -56,6 +60,7 @@ async function getMaker(contractID,chain){
         console.log("Contract Maker: "+res.data);
     }catch(error){
         console.log(error);
+        throw (error);
     }
 }
 
@@ -68,6 +73,7 @@ async function getTokenID(contractID,chain,tokIndex){
         return res.data;
     }catch(error){
         console.log(error);
+        throw (error);
     }
 }
 
@@ -80,6 +86,7 @@ async function getUnit(contractID,chain){
         console.log("Token Units: "+res);
     }catch(error){
         console.log(error);
+        throw (error);
     }
 }
 
@@ -91,10 +98,11 @@ async function getTokenBalance(contractID,chain,acnt){
         return (res.data);
     }catch(error){
         console.log(error);
+        throw (error);
     }
 }
 
-async function issueToken(contractID,chain,acnt,amount,attachment='',fee=30000000){
+async function issueToken(contractID,chain,acnt,amount,attachment=''){
     try{
         const contract = new jv.TokCtrtWithoutSplit(contractID,chain);
         const res = await contract.issue(acnt,amount,attachment);
@@ -102,6 +110,7 @@ async function issueToken(contractID,chain,acnt,amount,attachment='',fee=3000000
         return res;
     }catch(error){
         console.log(error);
+        throw (error);
     }
 }
 
@@ -113,6 +122,7 @@ async function sendToken(contractID,chain,acnt,recipient,amount,attachment='',fe
         return res;
     }catch(error){
         console.log(error);
+        throw (error);
     }
 }
 
@@ -127,14 +137,6 @@ async function destroyTokens(contractID,chain,acnt,amount,attachment='',fee=3000
         throw (error);
     }
 }
-
-const seed1 = new jv.Seed("glove safe safe collect switch winter jacket skill slender banner gift industry time skin suit");
-
-const api = jv.NodeAPI.new("http://gemmer.vcoin.systems:9924");
-const ch = new jv.Chain(api, jv.ChainID.TEST_NET);
-
-const wal_acnt = new jv.Wallet(seed1);
-const acnt1 = wal_acnt.getAcnt(ch, 0);
 
 export {registerToken,getIssuer,getMaker,getTokenID,getTokenBalance,
     issueToken,getUnit,sendToken,destroyTokens,checkToken
