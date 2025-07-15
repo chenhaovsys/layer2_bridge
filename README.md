@@ -22,7 +22,7 @@ A seamless bridge between **VSYS** and **Ethereum** networks, enabling secure to
 ### 1. **Installation**
 ```bash
 git clone https://github.com/chenhaovsys/layer2_bridge.git
-cd bridge
+cd layer2_bridge
 npm run install-all
 ```
 
