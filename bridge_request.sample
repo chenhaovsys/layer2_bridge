@@ -1,0 +1,10 @@
+{
+  "acntseed_vsys": "your_vsys_seed_phrase",
+  "acntaddr_vsys": "your_vsys_address", 
+  "acntaddr_eth": "your_eth_address",
+  "acntprivkey_eth": "your_eth_private_key",
+  "network1": "VSYS",
+  "network2": "LAYER2",
+  "tkn": "TOKEN_NAME",
+  "amount": 1000
+}
