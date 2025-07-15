@@ -56,8 +56,8 @@ node api.js
 
 | Token Name | VSYS Contract | Ethereum Contract | Native Network |
 |------------|---------------|-------------------|----------------|
-| **MOUSE** | `TWugNigAshwVkMjgutDdF9AQJMoKC9NFBAoVu3yFK` | `0x32e0fD6C049F69fc8A412d1183f4aA31dd9359D9` | Original VSYS Token |
-| **BRG_LAYER2** | `TWuJt8bsbYzffpEWi7R2cYKv7U7Vt5uSJmwnai6VY` | `0x40aC7981e59cfA9d6B25aAd5681A53058A480099` | Original ETH Token |
+| **MOUSE** | `TWugNigAshwVkMjgutDdF9AQJMoKC9NFBAoVu3yFK` | `0x32e0fD6C049F69fc8A412d1183f4aA31dd9359D9` ( Wrapped Token ) | Original VSYS Token |
+| **BRG_LAYER2** | `TWuJt8bsbYzffpEWi7R2cYKv7U7Vt5uSJmwnai6VY` ( Wrapped Token ) | `0x40aC7981e59cfA9d6B25aAd5681A53058A480099` | Original ETH Token |
 
 > 💡 **Token Reference:** Use the exact token names above in your `bridge_request.json` file.
 > **⚠️ Important:** Replace the credentials above with your actual account details
@@ -66,7 +66,7 @@ node api.js
 
 | Parameter | Description | Example |
 |-----------|-------------|---------|
-| `network1` | Source network (token origin) | `VSYS` |
+| `network1` | Origin network | `VSYS` |
 | `network2` | Destination network | `LAYER2` |
 | `tkn` | Original token name (must exist in MongoDB) | `MOUSE` |
 | `amount` | Number of tokens to transfer | `1000` |
