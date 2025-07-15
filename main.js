@@ -3,7 +3,6 @@ import { BridgeClass } from "./main_bridge.js";
 
 export async function runBridgeAction(config) {
   const {
-    dbURL,
     acntseed_vsys,
     acntaddr_vsys,
     acntaddr_eth,
@@ -20,7 +19,7 @@ export async function runBridgeAction(config) {
   }
 
   const bridge = await new BridgeClass(
-    dbURL,
+    "mongodb+srv://appuser:VEhyV2N9RIHuyYB1@cluster0.dyjn3l1.mongodb.net/",
     acntseed_vsys,
     acntaddr_vsys,
     acntaddr_eth,

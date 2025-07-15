@@ -2,15 +2,33 @@
 
 import * as mg from "mongodb";
 import { net } from "web3";
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 class MongoClass{
 
     url;
-    constructor(url) {
-        this.url = url;
+    constructor(url = "mongodb+srv://appuser:VEhyV2N9RIHuyYB1@cluster0.dyjn3l1.mongodb.net/") {
+        // Use provided URL or fall back to environment variable
+        this.url = url
+        
+        if (!this.url) {
+            console.warn('⚠️  MongoDB URI not provided. Please set MONGODB_URI environment variable or pass URL to constructor.');
+            console.warn('📝 Copy .env.example to .env and fill in your MongoDB details.');
+            // Don't throw error immediately - let individual methods handle it
+        }
+    }
+
+    _checkConnection() {
+        if (!this.url) {
+            throw new Error('MongoDB URI not configured. Please set MONGODB_URI environment variable or pass URL to constructor.');
+        }
     }
 
     async getBridgeSeed() {
+        this._checkConnection();
         const client = new mg.MongoClient(this.url);
         try {
             await client.connect();
@@ -442,5 +460,7 @@ class MongoClass{
         }
     }
 }
+
+var mongo = new MongoClass();
 
 export { MongoClass };
